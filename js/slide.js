@@ -20,20 +20,29 @@ export default class Slide {
 
   // inicia o evento de mousemove e define a posição inicial do clique na página
   onStart(event) {
+    let movetype;
+    if (event.type === 'mousedown') {
     event.preventDefault();
     this.dist.startX = event.clientX;
-    this.wrapper.addEventListener('mousemove', this.onMove);
+    movetype = 'mousemove';
+    } else {
+    this.dist.startX = event.changedTouches[0].clientX;
+    movetype = 'touchmove';
+    }
+    this.wrapper.addEventListener(movetype, this.onMove);
   }
 
   // define a posição final do mouse na página
   onMove(event) {
-    const finalPosition = this.updatePosition(event.clientX)
+    const pointerPosition = (event.type === 'mousemove') ? event.clientX : event.changedTouches[0].clientX;
+    const finalPosition = this.updatePosition(pointerPosition);
     this.moveSlide(finalPosition);
   }
 
   // remove o evento de movimentação do mouse após o clique up
   onEnd() {
-    this.wrapper.removeEventListener('mousemove', this.onMove);
+    const moveType = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
+    this.wrapper.removeEventListener(moveType, this.onMove);
     this.dist.finalPosition = this.dist.movePosition;
   }
 
@@ -41,7 +50,9 @@ export default class Slide {
   // e clique up para finalizar a movimentação
   addSlideEvents() {
     this.wrapper.addEventListener('mousedown', this.onStart);
+    this.wrapper.addEventListener('touchstart', this.onStart);
     this.wrapper.addEventListener('mouseup', this.onEnd);
+    this.wrapper.addEventListener('touchend', this.onEnd);
   }
 
   // redefine a referência this dos eventos
